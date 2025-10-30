@@ -1,0 +1,1102 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cronograma Gantt - Proyecto CRM Educativo "Crecer Más"</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f4f5f7;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #0052CC 0%, #0065FF 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        .header .subtitle {
+            font-size: 1em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 0;
+            min-height: 600px;
+        }
+
+        /* Panel izquierdo - Kanban */
+        .kanban-panel {
+            background: #fafbfc;
+            border-right: 1px solid #dfe1e6;
+            padding: 20px;
+            overflow-y: auto;
+            max-height: calc(100vh - 250px);
+        }
+
+        .kanban-section {
+            margin-bottom: 25px;
+        }
+
+        .kanban-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px;
+            background: #fff;
+            border-radius: 3px;
+            margin-bottom: 10px;
+            font-weight: 600;
+            font-size: 0.85em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .kanban-header.todo {
+            border-left: 3px solid #6c757d;
+            color: #6c757d;
+        }
+
+        .kanban-header.in-progress {
+            border-left: 3px solid #0052CC;
+            color: #0052CC;
+        }
+
+        .kanban-header.done {
+            border-left: 3px solid #00875A;
+            color: #00875A;
+        }
+
+        .kanban-count {
+            background: #dfe1e6;
+            color: #42526E;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.9em;
+        }
+
+        .task-card {
+            background: white;
+            border: 1px solid #dfe1e6;
+            border-radius: 3px;
+            padding: 12px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        .task-card:hover {
+            background: #f4f5f7;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transform: translateY(-1px);
+        }
+
+        .task-card-id {
+            font-size: 0.75em;
+            color: #5e6c84;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .task-card-name {
+            font-size: 0.9em;
+            color: #172b4d;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .task-card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.75em;
+            color: #5e6c84;
+        }
+
+        .task-card-progress {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .progress-bar-mini {
+            width: 60px;
+            height: 4px;
+            background: #dfe1e6;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .progress-bar-mini-fill {
+            height: 100%;
+            background: #0052CC;
+            transition: width 0.3s;
+        }
+
+        .task-badge {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 0.7em;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-critical {
+            background: #FFEBE6;
+            color: #BF2600;
+        }
+
+        .badge-phase-1 {
+            background: #DEEBFF;
+            color: #0052CC;
+        }
+
+        .badge-phase-2 {
+            background: #EAE6FF;
+            color: #5243AA;
+        }
+
+        .badge-phase-3 {
+            background: #E3FCEF;
+            color: #006644;
+        }
+
+        /* Panel derecho - Gantt */
+        .gantt-panel {
+            background: white;
+            padding: 20px;
+            overflow-x: auto;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #fafbfc;
+            border-radius: 3px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.8em;
+            font-weight: 600;
+            color: #0052CC;
+        }
+
+        .stat-label {
+            font-size: 0.75em;
+            color: #5e6c84;
+            text-transform: uppercase;
+            margin-top: 5px;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #0052CC;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0065FF;
+        }
+
+        .btn-success {
+            background: #00875A;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #00A870;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .gantt-chart {
+            min-width: 900px;
+            position: relative;
+        }
+
+        .gantt-header {
+            display: flex;
+            background: #fafbfc;
+            border-bottom: 2px solid #dfe1e6;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .gantt-task-column {
+            width: 250px;
+            min-width: 250px;
+            border-right: 2px solid #dfe1e6;
+            padding: 12px;
+            font-weight: 600;
+            color: #42526E;
+            font-size: 0.85em;
+        }
+
+        .gantt-timeline-header {
+            flex: 1;
+            display: flex;
+            position: relative;
+        }
+
+        .month-header {
+            flex: 1;
+            padding: 12px 10px;
+            text-align: center;
+            font-weight: 600;
+            color: #42526E;
+            font-size: 0.85em;
+            border-right: 1px solid #dfe1e6;
+        }
+
+        .gantt-body {
+            display: flex;
+        }
+
+        .task-list {
+            width: 250px;
+            min-width: 250px;
+        }
+
+        .task-row {
+            padding: 15px 12px;
+            border-bottom: 1px solid #f4f5f7;
+            border-right: 2px solid #dfe1e6;
+            background: white;
+            transition: background 0.2s;
+            min-height: 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .task-row:hover {
+            background: #fafbfc;
+        }
+
+        .task-row-name {
+            font-weight: 500;
+            color: #172b4d;
+            font-size: 0.9em;
+            margin-bottom: 4px;
+        }
+
+        .task-row-info {
+            font-size: 0.75em;
+            color: #5e6c84;
+        }
+
+        .timeline-area {
+            flex: 1;
+            position: relative;
+            background: white;
+        }
+
+        .task-bar-row {
+            display: flex;
+            align-items: center;
+            height: 60px;
+            position: relative;
+            border-bottom: 1px solid #f4f5f7;
+            background: repeating-linear-gradient(
+                to right,
+                transparent,
+                transparent 11.1%,
+                #f4f5f7 11.1%,
+                #f4f5f7 11.11%
+            );
+        }
+
+        .task-bar {
+            position: absolute;
+            height: 32px;
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 12px;
+            font-size: 0.8em;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }
+
+        .task-bar:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        .task-bar-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .task-bar-progress {
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            background: rgba(255,255,255,0.3);
+            border-radius: 3px;
+            transition: width 0.5s ease;
+        }
+
+        .task-bar-text {
+            position: relative;
+            z-index: 1;
+        }
+
+        .task-bar-percent {
+            position: relative;
+            z-index: 1;
+            font-size: 0.9em;
+        }
+
+        .phase-1 { background: #0052CC; }
+        .phase-2 { background: #5243AA; }
+        .phase-3 { background: #00875A; }
+        .status-todo { background: #6c757d; }
+        .status-done { background: #00875A; }
+
+        .today-line {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #FF5630;
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        .today-label {
+            position: absolute;
+            top: -25px;
+            background: #FF5630;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 0.75em;
+            transform: translateX(-50%);
+            font-weight: 600;
+        }
+
+        .milestone {
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            background: #FFAB00;
+            transform: rotate(45deg);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            cursor: pointer;
+            z-index: 6;
+            transition: transform 0.2s;
+        }
+
+        .milestone:hover {
+            transform: rotate(45deg) scale(1.15);
+        }
+
+        .milestone-label {
+            position: absolute;
+            top: -28px;
+            left: 50%;
+            transform: translateX(-50%) rotate(-45deg);
+            background: #172b4d;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-size: 0.7em;
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity 0.2s;
+            pointer-events: none;
+        }
+
+        .milestone:hover .milestone-label {
+            opacity: 1;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .updating {
+            animation: pulse 0.5s ease;
+        }
+
+        .status-selector {
+            display: flex;
+            gap: 5px;
+            margin-top: 8px;
+        }
+
+        .status-btn {
+            flex: 1;
+            padding: 4px 8px;
+            border: 1px solid #dfe1e6;
+            background: white;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 0.7em;
+            transition: all 0.2s;
+        }
+
+        .status-btn:hover {
+            background: #f4f5f7;
+        }
+
+        .status-btn.active {
+            font-weight: 600;
+            border-width: 2px;
+        }
+
+        .status-btn.todo.active {
+            border-color: #6c757d;
+            background: #f8f9fa;
+            color: #6c757d;
+        }
+
+        .status-btn.progress.active {
+            border-color: #0052CC;
+            background: #DEEBFF;
+            color: #0052CC;
+        }
+
+        .status-btn.done.active {
+            border-color: #00875A;
+            background: #E3FCEF;
+            color: #00875A;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #00875A;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 3px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 1000;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: all 0.3s;
+        }
+
+        .notification.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Cronograma de Proyecto - CRM Educativo "Crecer Más"</h1>
+            <div class="subtitle">Sistema de Gestión de Tareas Estilo Jira | Enero - Septiembre 2026</div>
+        </div>
+
+        <div class="main-content">
+            <!-- Panel Kanban -->
+            <div class="kanban-panel">
+                <div class="kanban-section">
+                    <div class="kanban-header todo">
+                        <span>Por Hacer</span>
+                        <span class="kanban-count" id="count-todo">0</span>
+                    </div>
+                    <div id="kanban-todo"></div>
+                </div>
+
+                <div class="kanban-section">
+                    <div class="kanban-header in-progress">
+                        <span>En Progreso</span>
+                        <span class="kanban-count" id="count-progress">0</span>
+                    </div>
+                    <div id="kanban-progress"></div>
+                </div>
+
+                <div class="kanban-section">
+                    <div class="kanban-header done">
+                        <span>Completadas</span>
+                        <span class="kanban-count" id="count-done">0</span>
+                    </div>
+                    <div id="kanban-done"></div>
+                </div>
+            </div>
+
+            <!-- Panel Gantt -->
+            <div class="gantt-panel">
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-value" id="totalProgress">0%</div>
+                        <div class="stat-label">Progreso Total</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="tasksComplete">0/10</div>
+                        <div class="stat-label">Tareas Completadas</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="daysRemaining">190</div>
+                        <div class="stat-label">Días Restantes</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="currentPhase">Fase 1</div>
+                        <div class="stat-label">Fase Actual</div>
+                    </div>
+                </div>
+
+                <div class="controls">
+                    <div>
+                        <button class="btn btn-primary" onclick="simulateProgress()" id="simulateBtn">
+                            ▶ Simular Progreso
+                        </button>
+                        <button class="btn btn-success" onclick="completeNextTask()">
+                            ✓ Completar Siguiente
+                        </button>
+                        <button class="btn btn-secondary" onclick="resetProgress()">
+                            ↺ Reiniciar
+                        </button>
+                    </div>
+                    <div>
+                        <label style="margin-right: 8px; font-size: 0.9em;">Velocidad:</label>
+                        <select id="speed" style="padding: 6px 10px; border-radius: 3px; border: 1px solid #dfe1e6;">
+                            <option value="1000">Normal</option>
+                            <option value="500">Rápida</option>
+                            <option value="200">Muy Rápida</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="gantt-chart">
+                    <div class="gantt-header">
+                        <div class="gantt-task-column">TAREA</div>
+                        <div class="gantt-timeline-header" id="timeline-header"></div>
+                    </div>
+                    <div class="gantt-body">
+                        <div class="task-list" id="task-list"></div>
+                        <div class="timeline-area" id="timeline-area">
+                            <div class="today-line" id="today-line">
+                                <div class="today-label">HOY</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="notification" id="notification"></div>
+
+    <script>
+        // Configuración del proyecto
+        const projectConfig = {
+            startDate: new Date('2026-01-05'),
+            endDate: new Date('2026-09-30'),
+            totalDays: 190,
+            months: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep']
+        };
+
+        // Definición de tareas
+        const tasks = [
+            {
+                id: 'WBS-1.0',
+                name: 'Definición de Requerimientos',
+                duration: 25,
+                start: 0,
+                progress: 0,
+                status: 'todo',
+                phase: 'phase-1',
+                critical: true,
+                milestone: 'Aprobación de Requerimientos'
+            },
+            {
+                id: 'WBS-2.0',
+                name: 'Diseño de Interfaz (UI/UX)',
+                duration: 20,
+                start: 15,
+                progress: 0,
+                status: 'todo',
+                phase: 'phase-1',
+                critical: false
+            },
+            {
+                id: 'WBS-3.0',
+                name: 'Configuración Base de Datos',
+                duration: 15,
+                start: 15,
+                progress: 0,
+                status: 'todo',
+                phase: 'phase-1',
+                critical: false
+            },
+            {
+                id: 'WBS-4.0',
+                name: 'Formulario Web de Postulación',
+                duration: 20,
+                start: 35,
+                progress: 0,
+                status: 'todo',
+                phase: 'phase-2',
+                critical: true,
+                milestone: 'Demo Formulario Funcional'
+            },
+            {
+                id: 'WBS-5.0',
+                name: 'Módulo de Gestión (CRUD)',
+                duration: 21,
+                start: 55,
+                progress: 0,
+                status: 'todo',
+                phase: 'phase-2',
+                critical: false
+            },
+            {
+                id: 'WBS-6.0',
+                name: 'Sistema de Automatización',
+                duration: 28,
+                start: 76,
+                progress: 0,
+                status: 'todo',
+                phase: 'phase-2',
+                critical: true,
+                milestone: 'Prueba de Automatizaciones'
+            },
+            {
+                id: 'WBS-7.0',
+                name: 'Dashboard de Métricas',
+                duration: 22,
+                start: 104,
+                progress: 0,
+                status: 'todo',
+                phase: 'phase-2',
+                critical: false
+            },
+            {
+                id: 'WBS-8.0',
+                name: 'Integraciones APIs Externas',
+                duration: 28,
+                start: 90,
+                progress: 0,
+                status: 'todo',
+                phase: 'phase-3',
+                critical: true
+            },
+            {
+                id: 'WBS-9.0',
+                name: 'Documentación y Capacitación',
+                duration: 15,
+                start: 126,
+                progress: 0,
+                status: 'todo',
+                phase: 'phase-3',
+                critical: false
+            },
+            {
+                id: 'WBS-10.0',
+                name: 'UAT y Despliegue a Producción',
+                duration: 25,
+                start: 141,
+                progress: 0,
+                status: 'todo',
+                phase: 'phase-3',
+                critical: true,
+                milestone: 'Go-Live'
+            }
+        ];
+
+        let simulationInterval = null;
+        let currentSimulationDay = 0;
+
+        // Inicialización
+        function init() {
+            renderTimelineHeader();
+            renderTaskList();
+            renderGanttBars();
+            renderKanban();
+            updateStatistics();
+            setTodayLine();
+        }
+
+        // Renderizar encabezado de timeline
+        function renderTimelineHeader() {
+            const header = document.getElementById('timeline-header');
+            header.innerHTML = '';
+
+            projectConfig.months.forEach(month => {
+                const div = document.createElement('div');
+                div.className = 'month-header';
+                div.textContent = month;
+                header.appendChild(div);
+            });
+        }
+
+        // Renderizar lista de tareas
+        function renderTaskList() {
+            const taskList = document.getElementById('task-list');
+            taskList.innerHTML = '';
+
+            tasks.forEach(task => {
+                const row = document.createElement('div');
+                row.className = 'task-row';
+                row.innerHTML = `
+                    <div class="task-row-name">${task.id}: ${task.name}</div>
+                    <div class="task-row-info">
+                        ${task.duration} días
+                        ${task.critical ? ' • Crítica' : ''}
+                    </div>
+                `;
+                taskList.appendChild(row);
+            });
+        }
+
+        // Renderizar barras de Gantt
+        function renderGanttBars() {
+            const timelineArea = document.getElementById('timeline-area');
+            const existingBars = timelineArea.querySelectorAll('.task-bar-row');
+            existingBars.forEach(bar => bar.remove());
+
+            tasks.forEach(task => {
+                const row = document.createElement('div');
+                row.className = 'task-bar-row';
+
+                const bar = document.createElement('div');
+                bar.className = `task-bar ${task.phase}`;
+                if (task.status === 'todo') bar.classList.add('status-todo');
+                if (task.status === 'done') bar.classList.add('status-done');
+                bar.id = `bar-${task.id}`;
+
+                const left = (task.start / projectConfig.totalDays) * 100;
+                const width = (task.duration / projectConfig.totalDays) * 100;
+
+                bar.style.left = `${left}%`;
+                bar.style.width = `${width}%`;
+
+                bar.innerHTML = `
+                    <div class="task-bar-inner">
+                        <div class="task-bar-progress" style="width: ${task.progress}%"></div>
+                        <span class="task-bar-text">${task.id}</span>
+                        <span class="task-bar-percent">${task.progress}%</span>
+                    </div>
+                `;
+
+                row.appendChild(bar);
+
+                // Agregar hito si existe
+                if (task.milestone) {
+                    const milestone = document.createElement('div');
+                    milestone.className = 'milestone';
+                    const milestonePos = left + width;
+                    milestone.style.left = `${milestonePos}%`;
+                    milestone.style.top = '18px';
+                    milestone.innerHTML = `<div class="milestone-label">${task.milestone}</div>`;
+                    row.appendChild(milestone);
+                }
+
+                timelineArea.appendChild(row);
+            });
+        }
+
+        // Renderizar panel Kanban
+        function renderKanban() {
+            const todoContainer = document.getElementById('kanban-todo');
+            const progressContainer = document.getElementById('kanban-progress');
+            const doneContainer = document.getElementById('kanban-done');
+
+            todoContainer.innerHTML = '';
+            progressContainer.innerHTML = '';
+            doneContainer.innerHTML = '';
+
+            let todoCount = 0, progressCount = 0, doneCount = 0;
+
+            tasks.forEach(task => {
+                const card = document.createElement('div');
+                card.className = 'task-card';
+                card.innerHTML = `
+                    <div class="task-card-id">${task.id}</div>
+                    <div class="task-card-name">${task.name}</div>
+                    <div class="task-card-footer">
+                        <div>
+                            <span class="task-badge badge-${task.phase}">${task.phase.toUpperCase()}</span>
+                            ${task.critical ? '<span class="task-badge badge-critical">CRÍTICA</span>' : ''}
+                        </div>
+                        <div class="task-card-progress">
+                            <div class="progress-bar-mini">
+                                <div class="progress-bar-mini-fill" style="width: ${task.progress}%"></div>
+                            </div>
+                            <span>${task.progress}%</span>
+                        </div>
+                    </div>
+                    <div class="status-selector">
+                        <button class="status-btn todo ${task.status === 'todo' ? 'active' : ''}"
+                                onclick="changeTaskStatus('${task.id}', 'todo')">
+                            Por Hacer
+                        </button>
+                        <button class="status-btn progress ${task.status === 'progress' ? 'active' : ''}"
+                                onclick="changeTaskStatus('${task.id}', 'progress')">
+                            En Progreso
+                        </button>
+                        <button class="status-btn done ${task.status === 'done' ? 'active' : ''}"
+                                onclick="changeTaskStatus('${task.id}', 'done')">
+                            Completada
+                        </button>
+                    </div>
+                `;
+
+                if (task.status === 'todo') {
+                    todoContainer.appendChild(card);
+                    todoCount++;
+                } else if (task.status === 'progress') {
+                    progressContainer.appendChild(card);
+                    progressCount++;
+                } else if (task.status === 'done') {
+                    doneContainer.appendChild(card);
+                    doneCount++;
+                }
+            });
+
+            document.getElementById('count-todo').textContent = todoCount;
+            document.getElementById('count-progress').textContent = progressCount;
+            document.getElementById('count-done').textContent = doneCount;
+        }
+
+        // Cambiar estado de tarea
+        function changeTaskStatus(taskId, newStatus) {
+            const task = tasks.find(t => t.id === taskId);
+            if (!task) return;
+
+            task.status = newStatus;
+
+            // Actualizar progreso según el estado
+            if (newStatus === 'todo') {
+                task.progress = 0;
+            } else if (newStatus === 'progress' && task.progress === 0) {
+                task.progress = 50;
+            } else if (newStatus === 'done') {
+                task.progress = 100;
+            }
+
+            // Actualizar visualización
+            renderKanban();
+            renderGanttBars();
+            updateStatistics();
+
+            showNotification(`Tarea ${taskId} movida a: ${getStatusName(newStatus)}`);
+        }
+
+        function getStatusName(status) {
+            const names = {
+                'todo': 'Por Hacer',
+                'progress': 'En Progreso',
+                'done': 'Completada'
+            };
+            return names[status] || status;
+        }
+
+        // Actualizar estadísticas
+        function updateStatistics() {
+            let totalProgress = 0;
+            let completedTasks = 0;
+            let currentPhase = 'Fase 1';
+
+            tasks.forEach(task => {
+                totalProgress += task.progress;
+                if (task.progress === 100) completedTasks++;
+
+                if (task.status === 'progress') {
+                    if (task.phase === 'phase-1') currentPhase = 'Fase 1: Fundación';
+                    else if (task.phase === 'phase-2') currentPhase = 'Fase 2: Desarrollo';
+                    else if (task.phase === 'phase-3') currentPhase = 'Fase 3: Integración';
+                }
+            });
+
+            totalProgress = Math.round(totalProgress / tasks.length);
+
+            document.getElementById('totalProgress').textContent = `${totalProgress}%`;
+            document.getElementById('tasksComplete').textContent = `${completedTasks}/${tasks.length}`;
+            document.getElementById('currentPhase').textContent = currentPhase;
+
+            const daysUsed = Math.round((totalProgress / 100) * projectConfig.totalDays);
+            const daysRemaining = projectConfig.totalDays - daysUsed;
+            document.getElementById('daysRemaining').textContent = daysRemaining;
+        }
+
+        // Establecer línea de "hoy"
+        function setTodayLine() {
+            const todayLine = document.getElementById('today-line');
+            const todayPosition = (currentSimulationDay / projectConfig.totalDays) * 100;
+            todayLine.style.left = `${todayPosition}%`;
+        }
+
+        // Simular progreso
+        function simulateProgress() {
+            if (simulationInterval) {
+                clearInterval(simulationInterval);
+                simulationInterval = null;
+                document.getElementById('simulateBtn').textContent = '▶ Simular Progreso';
+                return;
+            }
+
+            document.getElementById('simulateBtn').textContent = '⏸ Pausar Simulación';
+            const speed = parseInt(document.getElementById('speed').value);
+
+            simulationInterval = setInterval(() => {
+                currentSimulationDay += 1;
+
+                tasks.forEach(task => {
+                    const taskEnd = task.start + task.duration;
+                    if (currentSimulationDay >= task.start && currentSimulationDay <= taskEnd) {
+                        const taskProgress = ((currentSimulationDay - task.start) / task.duration) * 100;
+                        task.progress = Math.min(100, Math.round(taskProgress));
+
+                        // Actualizar estado automáticamente
+                        if (task.progress > 0 && task.progress < 100 && task.status === 'todo') {
+                            task.status = 'progress';
+                        } else if (task.progress === 100) {
+                            task.status = 'done';
+                        }
+                    }
+                });
+
+                renderKanban();
+                renderGanttBars();
+                updateStatistics();
+                setTodayLine();
+
+                if (currentSimulationDay >= projectConfig.totalDays) {
+                    clearInterval(simulationInterval);
+                    simulationInterval = null;
+                    document.getElementById('simulateBtn').textContent = '▶ Simular Progreso';
+                    showNotification('¡Proyecto Completado!');
+                }
+            }, speed);
+        }
+
+        // Completar siguiente tarea
+        function completeNextTask() {
+            const nextTask = tasks.find(t => t.status !== 'done');
+            if (nextTask) {
+                nextTask.status = 'done';
+                nextTask.progress = 100;
+
+                renderKanban();
+                renderGanttBars();
+                updateStatistics();
+
+                showNotification(`Tarea ${nextTask.id} completada`);
+
+                if (nextTask.milestone) {
+                    setTimeout(() => {
+                        showNotification(`¡Hito alcanzado: ${nextTask.milestone}!`);
+                    }, 500);
+                }
+            } else {
+                showNotification('Todas las tareas están completadas');
+            }
+        }
+
+        // Reiniciar progreso
+        function resetProgress() {
+            tasks.forEach(task => {
+                task.progress = 0;
+                task.status = 'todo';
+            });
+            currentSimulationDay = 0;
+
+            if (simulationInterval) {
+                clearInterval(simulationInterval);
+                simulationInterval = null;
+                document.getElementById('simulateBtn').textContent = '▶ Simular Progreso';
+            }
+
+            renderKanban();
+            renderGanttBars();
+            updateStatistics();
+            setTodayLine();
+
+            showNotification('Progreso reiniciado');
+        }
+
+        // Mostrar notificación
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.classList.add('show');
+
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // Iniciar cuando cargue la página
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
