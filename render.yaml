@@ -1,0 +1,6 @@
+services:
+  - type: web
+    name: cronograma-gestion
+    env: static
+    buildCommand: cp cronogama_gestion.html index.html
+    staticPublishPath: .
